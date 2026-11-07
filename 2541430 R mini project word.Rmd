@@ -1,0 +1,302 @@
+---
+title: "2541430 R mini project"
+author: "Hilen Madhumon"
+date: "`r Sys.Date()`"
+output: word_document
+---
+
+# 2BScDS STA 102 - 2
+# SUBMITTED TO;
+ MARYKRIPA MATHEW
+ 
+# SUBMITTED BY;
+ HILEN MADHUMON
+ 2BScDS
+ 2541430
+
+
+# Statistical Analysis of Manufacturing Defects Dataset
+
+
+# INTRODUCTION
+
+   Data analysis plays a crucial role in identifying patterns, trends, and decision-making in industries. In this project, a real-time secondary dataset related to manufacturing defects is analyzed using R programming.
+
+The dataset contains more than 200 observations and includes both numerical and categorical variables. Statistical techniques from Unit 1 and Unit 2 are applied, along with bivariate and multivariate analysis.
+
+
+# DATASET DESCRIPTION
+
+SOURCE: Secondary dataset (Manufacturing defects data)
+Number of Observations:
+
+VARIABLES:
+Defect_Count (Numerical)
+Production_Time (Numerical)
+Temperature (Numerical)
+Machine_Type (Categorical)
+Shift (Categorical)
+Operator (Categorical)
+
+The dataset contains 250 observations and 8 variables. It includes both numerical and categorical variables. The numerical variables include defect_id, product_id, and repair_cost. The categorical variables include defect_type, defect_location, severity, and inspection_method. The defect_date variable is stored in Date format. This dataset satisfies the requirement of having 5–7 variables with both numerical and categorical types.
+
+
+# OBJECTIVES
+
+To summarize numerical variables using mean, median, SD, range.
+To analyze categorical variables using frequency tables.
+To visualize data using histograms, bar plots, and boxplots.
+To perform bivariate analysis between selected variables.
+To calculate correlation between numerical variables.
+To perform Chi-square test for categorical variables.
+To conduct t-test and ANOVA where applicable.
+To perform multivariate data manipulation using dplyr.
+To interpret results clearly using statistical reasoning.
+
+
+# METHODOLOGY
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# Load dataset
+defects <- read.csv("defects_data.csv")
+
+# View structure
+str(defects)
+
+# Check dimensions
+dim(defects)
+
+head(defects)
+```
+
+# Data preperation
+```{r}
+# Select only first 250 rows
+defects_250 <- defects[1:250, ]
+
+# Check dimensions
+dim(defects_250)
+
+
+```
+```{r}
+defects_250$defect_type <- as.factor(defects_250$defect_type)
+defects_250$defect_location <- as.factor(defects_250$defect_location)
+defects_250$severity <- as.factor(defects_250$severity)
+defects_250$inspection_method <- as.factor(defects_250$inspection_method)
+
+defects_250$defect_date <- as.Date(defects_250$defect_date, format="%m/%d/%Y")
+
+str(defects_250)
+```
+# Univariate analysis
+
+# numerical variables
+```{r}
+summary(defects_250$repair_cost)
+
+mean(defects_250$repair_cost)
+median(defects_250$repair_cost)
+sd(defects_250$repair_cost)
+range(defects_250$repair_cost)
+```
+The repair cost variable was analyzed using descriptive statistics.
+The mean repair cost is 518.49, while the median is 521.93. Since the mean and median are very close to each other, it indicates that the data is approximately symmetrically distributed.
+The minimum repair cost is 10.22, and the maximum is 999.64, showing a wide range of repair costs. This indicates that some defects require very low repair cost while some are very expensive.
+The standard deviation is 281.31, which suggests there is considerable variation in repair costs among the defects.
+The interquartile range (Q3 – Q1) shows that 50% of the repair costs lie between 300.76 and 754.84, indicating moderate spread in the middle values.
+Overall, repair costs show high variability but do not appear to be highly skewed since mean and median are nearly equal.
+
+```{r}
+hist(defects_250$repair_cost,
+     main="Histogram of Repair Cost",
+     col="lightblue",
+     xlab="Repair Cost")
+```
+The histogram confirms that the distribution of repair cost is approximately symmetric with moderate dispersion.
+
+
+# categorical variables
+```{r}
+table(defects_250$defect_type)
+table(defects_250$defect_location)
+table(defects_250$severity)
+table(defects_250$inspection_method)
+```
+DEFECT TYPE:
+Out of 250 defects:
+  Structural defects (99) are the most common.
+  Followed by Functional defects (79).
+  Cosmetic defects (72) are the least frequent.
+
+This indicates that structural issues are more prevalent in the products compared to cosmetic or functional defects.
+The mode of defect type is Structural.
+
+DEFECT LOCATION:
+  Most defects occur on the Surface (91).
+  Followed by Component (85).
+  Internal defects (74) are slightly less frequent.
+
+This suggests that visible areas of the product experience slightly more defects.
+The mode is Surface.
+
+SEVERITY:
+  Critical defects (97) are the most frequent.
+  Minor and Moderate defects are almost equally distributed.
+
+This is an important observation because it indicates a relatively high number of serious defects in the dataset.
+The mode is Critical.
+
+INSPECTION METHOD:
+  Manual Testing (95) is the most commonly used inspection method.
+  Followed by Visual Inspection (81).
+  Automated Testing (74) is slightly less used.
+
+This suggests that manual inspection methods are still dominant in defect detection.
+The mode is Manual Testing.
+
+
+   The univariate analysis shows that structural defects and critical severity defects are the most common. Surface areas experience the highest number of defects, and manual testing is the most frequently used inspection method. Overall, the dataset appears well distributed across categories.
+   
+   
+# Bivariate analysis
+# SEVERITY VS DEFECT TYPE
+The relationship between severity and defect type was analyzed using a contingency table.
+
+```{r}
+table(defects_250$severity, defects_250$defect_type)
+```
+
+From the table:
+  Structural defects appear frequently across all severity levels.
+  Critical defects are almost equally distributed between Functional (34) and Structural (34).
+  Moderate severity is highest in Structural defects (35).
+  Minor severity defects are more common in Structural (30) and Functional (27) compared to    Cosmetic (18).
+
+This suggests that Structural defects tend to have higher severity levels, especially Moderate and Critical.
+However, to statistically confirm whether severity and defect type are associated, a Chi-Square Test of Independence must be performed.
+
+```{r}
+chisq.test(defects_250$severity, defects_250$defect_type)
+```
+
+CHI-SQUARE TEST OF INDEPENDANCE
+
+Severity vs Defect Type:
+
+ Hypotheses:
+
+H₀ (Null Hypothesis):
+Severity and defect type are independent (no association).
+H₁ (Alternative Hypothesis):
+Severity and defect type are associated.
+
+ Test Results:
+
+Chi-square statistic (χ²) = 4.6023
+Degrees of freedom (df) = 4
+p-value = 0.3306
+
+ Decision Rule:
+
+Since the p-value (0.3306) is greater than 0.05, we fail to reject the null hypothesis.
+
+
+   The Chi-square test was conducted to examine the association between severity and defect type. The test produced a chi-square value of 4.6023 with 4 degrees of freedom and a p-value of 0.3306.
+Since the p-value is greater than the significance level of 0.05, there is no statistically significant association between severity and defect type.
+
+Therefore, severity level appears to be independent of defect type in this dataset.
+
+Important Observation:
+Even though structural defects appeared slightly more frequent in higher severity levels, the statistical test shows that this difference is not significant.
+
+
+# REPAIR COST VS SEVERITY
+```{r}
+aggregate(repair_cost ~ severity, data = defects_250, mean)
+```
+  Critical defects have the highest average repair cost (547.44).
+  Moderate defects have slightly lower mean cost (516.89).
+  Minor defects have the lowest mean repair cost (482.70).
+
+This suggests that more severe defects may require higher repair costs.
+However, to determine whether these differences are statistically significant, we perform a One-Way ANOVA test.
+
+```{r}
+anova_result <- aov(repair_cost ~ severity, data = defects_250)
+summary(anova_result)
+```
+
+ONE-WAY ANOVA
+
+Repair Cost vs Severity:
+
+ Hypotheses:
+ 
+H₀ (Null Hypothesis):
+The mean repair cost is the same for all severity levels.
+H₁ (Alternative Hypothesis):
+At least one severity level has a different mean repair cost.
+
+ ANOVA Results:
+
+F-value = 1.123
+p-value = 0.327
+Degrees of freedom = (2, 247)
+
+ Decision Rule:
+
+Since the p-value (0.327) is greater than 0.05, we fail to reject the null hypothesis.
+
+
+   A one-way ANOVA was conducted to compare the mean repair cost across different severity levels. The results showed an F-value of 1.123 with a p-value of 0.327.
+   Since the p-value is greater than the significance level of 0.05, there is no statistically significant difference in mean repair cost among Critical, Moderate, and Minor defects.
+   Although Critical defects had a slightly higher average repair cost, the difference is not statistically significant.
+
+Important Observation:
+Even though logically severe defects should cost more, this dataset does not provide enough statistical evidence to support that assumption.
+
+
+
+# MANUAL TESTING VS AUTOMATED TESTING
+```{r}
+t.test(repair_cost ~ inspection_method,
+       data = subset(defects_250,
+                     inspection_method %in% c("Manual Testing","Automated Testing")))
+```
+INDEPENDANT SAMPLE T-TEST
+
+Repair Cost: Automated Testing vs Manual Testing
+
+ Hypotheses:
+
+H₀ (Null Hypothesis):
+There is no difference in mean repair cost between Automated Testing and Manual Testing.
+H₁ (Alternative Hypothesis):
+There is a significant difference in mean repair cost between Automated Testing and Manual Testing.
+
+ Test Results:
+
+t-value = 0.385
+Degrees of freedom = 140.06
+p-value = 0.7008
+Mean (Automated Testing) = 511.72
+Mean (Manual Testing) = 493.93
+95% Confidence Interval = (-73.57 , 109.16)
+
+ Decision Rule:
+
+Since the p-value (0.7008) is greater than 0.05, we fail to reject the null hypothesis.
+
+
+  An independent samples t-test was conducted to compare the mean repair cost between defects detected using Automated Testing and Manual Testing. The results showed a t-value of 0.385 with a p-value of 0.7008.
+  Since the p-value is greater than the significance level of 0.05, there is no statistically significant difference in repair cost between the two inspection methods.
+  Although Automated Testing shows a slightly higher average repair cost than Manual Testing, the difference is not statistically significant.
+  
+  
+# CONCLUSION
+
+  The statistical analysis reveals that severity and defect type are independent of each other. Additionally, mean repair cost does not significantly differ across severity levels or inspection methods. Although slight numerical differences exist, they are not statistically significant at the 5% level. Therefore, repair cost variation in this dataset does not appear to be strongly influenced by severity or inspection method.
